@@ -50,10 +50,12 @@ const GameController = function(){
 
     const GameDisplay = function(){
         const boardElement = document.getElementById("grid");
-        const template = document.querySelector("template");
         const winnerDisplay = document.getElementById("winner");
-        const cellTemplate = template.content.querySelector(".cell");
-    
+
+        const cellTemplate = document.querySelector("#cell-template").content.querySelector(".cell");
+        const xTemplate = document.querySelector("#icon-template").content.querySelector(".X");
+        const oTemplate = document.querySelector("#icon-template").content.querySelector(".O");
+
         function initBoard(){
             for (let i = 0; i < numCells; i++){
                 const cellNode = document.importNode(cellTemplate, true);
@@ -66,13 +68,19 @@ const GameController = function(){
             for (const cell of boardElement.children){
                 cell.innerHTML = "";
             }
-            winnerDisplay.textContent = "";
+            winnerDisplay.innerText = "";
             enableBoardInteraction();
         }
     
         function updateCell(position, mark){
             const cell = boardElement.children[position];
-            cell.textContent = mark;
+
+            let icon;
+            if (mark == "X") icon = document.importNode(xTemplate, true);
+            else if (mark == "O") icon = document.importNode(oTemplate, true);
+            else throw new Error(`Invalid icon: ${icon}`);
+
+            cell.appendChild(icon);
         }
 
         function displayGameEnd(winner){

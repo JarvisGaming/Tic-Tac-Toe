@@ -50,16 +50,16 @@ const GameController = function(){
 
     const GameDisplay = function(){
         const boardElement = document.getElementById("grid");
-        const cellTemplate = document.querySelector("template");
+        const template = document.querySelector("template");
         const winnerDisplay = document.getElementById("winner");
-        const item = cellTemplate.content.querySelector(".cell");
+        const cellTemplate = template.content.querySelector(".cell");
     
         function initBoard(){
             for (let i = 0; i < numCells; i++){
-                const cellNode = document.importNode(item, true);
-                cellNode.addEventListener("click", handleCellClick);
+                const cellNode = document.importNode(cellTemplate, true);
                 boardElement.appendChild(cellNode);
             }
+            enableBoardInteraction();
         }
         
         function resetDisplay(){
@@ -75,7 +75,7 @@ const GameController = function(){
             cell.textContent = mark;
         }
 
-        function displayWinner(winner){
+        function displayGameEnd(winner){
             let winnerMessage;
 
             switch (winner){
@@ -93,6 +93,8 @@ const GameController = function(){
             }
 
             winnerDisplay.innerText = winnerMessage;
+
+            disableBoardInteraction();
         }
 
         function enableBoardInteraction(){
@@ -111,8 +113,7 @@ const GameController = function(){
             initBoard,
             resetDisplay,
             updateCell,
-            displayWinner,
-            disableBoardInteraction,
+            displayGameEnd,
         };
     }();
 
@@ -170,13 +171,13 @@ const GameController = function(){
     }
 
     function endGame(){
-        GameDisplay.displayWinner(getWinner());
-        GameDisplay.disableBoardInteraction();
+        GameDisplay.displayGameEnd(getWinner());
     }
 
     function restartGame(){
         GameBoard.clearBoard();
         GameDisplay.resetDisplay();
+        currentPlayer = player1;
     }
 
     return {

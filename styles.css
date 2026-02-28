@@ -16,6 +16,8 @@ body {
     width: 50vw;
     height: 50vw;
     grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+
+    border: 10px solid brown;
 }
 
 .cell {

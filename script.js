@@ -1,6 +1,6 @@
-const boardSize = 9;
-
 const GameController = function(){
+    const boardSize = 9;
+
     const Symbol = {
         X: "X",
         O: "O",
@@ -19,39 +19,7 @@ const GameController = function(){
         Undetermined: "Undetermined",
     };
 
-    const GameDisplay = function(){
-        const board = document.getElementById("grid");
-        const cellTemplate = document.querySelector("template");
-        const item = cellTemplate.content.querySelector(".cell");
-    
-        function initBoard(){
-            for (let i = 0; i < boardSize; i++){
-                const cellNode = document.importNode(item, true);
-                cellNode.addEventListener("click", playRound);
-                board.appendChild(cellNode);
-            }
-        }
-    
-        function updateBoard(state){
-            for (let i = 0; i < boardSize; i++){
-                const cell = board.children[i];
-                const mark = state[i];
-                cell.textContent = mark;
-            }
-        }
-
-        function disableBoardInteraction(){
-            for (const cell of board.children){
-                cell.removeEventListener("click", playRound);
-            }
-        }
-        
-        return { 
-            initBoard,
-            updateBoard,
-            disableBoardInteraction,
-        };
-    }();
+    let currentPlayer = Player.X;
 
     const GameBoard = function(){
         const state = new Array(boardSize).fill(Symbol.Empty);
@@ -60,13 +28,22 @@ const GameController = function(){
             return state[position] == Symbol.Empty;
         }
 
+        function getMark(position){
+            if (position < 0 || position >= boardSize) throw new Error(`Invalid cell position: ${position}`);
+            return state[position];
+        }
+
         // Returns true if the mark is successfully placed, false otherwise.
-        function set(position, mark){
+        function setMark(position, mark){
             if (position < 0 || position >= boardSize) throw new Error(`Invalid cell position: ${position}`);
             if (!isEmpty(position)) return false;
 
             state[position] = mark;
             return true;
+        }
+
+        function isFull(){
+            return state.every(mark => mark != Symbol.Empty);
         }
 
         function getWinner(){
@@ -94,18 +71,69 @@ const GameController = function(){
                 else if (isMarksEqual(mark1, mark2, mark3, Symbol.O)) return Winner.O;
             }
 
-            if (state.filter(mark => mark != Symbol.Empty).length == boardSize) return Winner.Tie;
+            if (isFull()) return Winner.Tie;
             else return Winner.Undetermined;
         }
 
         return {
-            state,
-            set,
+            getMark,
+            setMark,
             getWinner,
         };
     }();
 
-    let currentPlayer = Player.X;
+    const GameDisplay = function(){
+        const boardElement = document.getElementById("grid");
+        const cellTemplate = document.querySelector("template");
+        const item = cellTemplate.content.querySelector(".cell");
+    
+        function initBoard(){
+            for (let i = 0; i < boardSize; i++){
+                const cellNode = document.importNode(item, true);
+                cellNode.addEventListener("click", handleCellClick);
+                boardElement.appendChild(cellNode);
+            }
+        }
+    
+        function updateCell(position, mark){
+            const cell = boardElement.children[position];
+            cell.textContent = mark;
+        }
+
+        function displayWinner(winner){
+            const winnerDisplay = document.getElementById("winner");
+            let winnerMessage;
+
+            switch (winner){
+                case Winner.X:
+                    winnerMessage = "X wins!";
+                    break;
+                case Winner.O:
+                    winnerMessage = "O wins!";
+                    break;
+                case Winner.Tie:
+                    winnerMessage = "It's a tie!";
+                    break;
+                default:
+                    throw new Error(`Invalid winner: ${winner}`);
+            }
+
+            winnerDisplay.innerText = winnerMessage;
+        }
+
+        function disableBoardInteraction(){
+            for (const cell of boardElement.children){
+                cell.removeEventListener("click", handleCellClick);
+            }
+        }
+        
+        return { 
+            initBoard,
+            updateCell,
+            displayWinner,
+            disableBoardInteraction,
+        };
+    }();
 
     function changePlayer(){
         if (currentPlayer == Player.X) currentPlayer = Player.O;
@@ -118,18 +146,18 @@ const GameController = function(){
         else throw new Error(`Invalid currentPlayer: ${currentPlayer}`);
     }
 
-    function playRound(event){
+    function handleCellClick(event){
         const mark = getCurrentPlayerMark();
         const cell = event.target;
         const cellIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
 
-        if(GameBoard.set(cellIndex, mark)){
-            GameDisplay.updateBoard(GameBoard.state);
+        if(GameBoard.setMark(cellIndex, mark)){
+            GameDisplay.updateCell(cellIndex, mark);
             changePlayer();
-        }
 
-        if (GameBoard.getWinner() != Winner.Undetermined){
-            endGame(GameBoard.getWinner());
+            if (GameBoard.getWinner() != Winner.Undetermined){
+                endGame();
+            }
         }
     }
 
@@ -137,25 +165,8 @@ const GameController = function(){
         GameDisplay.initBoard();
     }
 
-    function endGame(winner){
-        const winnerDisplay = document.getElementById("winner");
-        let winnerMessage;
-
-        switch (winner){
-            case Winner.X:
-                winnerMessage = "X wins!";
-                break;
-            case Winner.O:
-                winnerMessage = "O wins!";
-                break;
-            case Winner.Tie:
-                winnerMessage = "It's a tie!";
-                break;
-            default:
-                throw new Error(`Invalid winner: ${winner}`);
-        }
-
-        winnerDisplay.textContent = winnerMessage;
+    function endGame(){
+        GameDisplay.displayWinner(GameBoard.getWinner());
         GameDisplay.disableBoardInteraction();
     }
 

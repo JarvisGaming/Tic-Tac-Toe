@@ -1,4 +1,6 @@
-const TicTacToe = function(){
+const boardSize = 9;
+
+const GameController = function(){
     const Symbol = {
         X: "X",
         O: "O",
@@ -17,8 +19,34 @@ const TicTacToe = function(){
         Undetermined: "Undetermined",
     };
 
+    const GameDisplay = function(){
+        const board = document.getElementById("grid");
+        const cellTemplate = document.querySelector("template");
+        const item = cellTemplate.content.querySelector(".cell");
+    
+        function initBoard(){
+            for (let i = 0; i < boardSize; i++){
+                const cellNode = document.importNode(item, true);
+                cellNode.addEventListener("click", playRound);
+                board.appendChild(cellNode);
+            }
+        }
+    
+        function updateBoard(state){
+            for (let i = 0; i < boardSize; i++){
+                const cell = board.children[i];
+                const mark = state[i];
+                cell.textContent = mark;
+            }
+        }
+        
+        return { 
+            initBoard,
+            updateBoard,
+        };
+    }();
+
     const GameBoard = function(){
-        const boardSize = 9;
         const state = new Array(boardSize).fill(Symbol.Empty);
 
         function isEmpty(position){
@@ -27,24 +55,11 @@ const TicTacToe = function(){
 
         // Returns true if the mark is successfully placed, false otherwise.
         function set(position, mark){
+            if (position < 0 || position >= boardSize) throw new Error(`Invalid cell position: ${position}`);
             if (!isEmpty(position)) return false;
+
             state[position] = mark;
             return true;
-        }
-
-        function display(){
-            const rowSeparator = "+-+-+-+\n";
-            function buildRow(mark1, mark2, mark3){
-                return `|${mark1}|${mark2}|${mark3}|\n`;
-            }
-
-            let output = "";
-            for (let i = 0; i <= 6; i += 3){
-                output += rowSeparator;
-                output += buildRow(state[i], state[i+1], state[i+2]);
-            }
-            output += rowSeparator;
-            console.log(output);
         }
 
         function getWinner(){
@@ -77,8 +92,8 @@ const TicTacToe = function(){
         }
 
         return {
+            state,
             set,
-            display,
             getWinner,
         };
     }();
@@ -96,26 +111,25 @@ const TicTacToe = function(){
         else throw new Error(`Invalid currentPlayer: ${currentPlayer}`);
     }
 
-    function playRound(){
+    function playRound(event){
         const mark = getCurrentPlayerMark();
+        const cell = event.target;
+        console.log(cell.parentNode.children);
+        const cellIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
 
-        let position;
-        do {
-            position = parseInt(prompt("Enter position:"));
-        } while (!GameBoard.set(position, mark));
+        console.log({mark, cell, cellIndex});
 
-        GameBoard.display();
-        changePlayer();
-    }
-
-    function playGame(){
-        while (GameBoard.getWinner() == Winner.Undetermined) {
-            playRound();
+        if(GameBoard.set(cellIndex, mark)){
+            GameDisplay.updateBoard(GameBoard.state);
+            changePlayer();
         }
-        console.log(GameBoard.getWinner());
     }
 
-    return {playGame};
+    function initGame(){
+        GameDisplay.initBoard();
+    }
+
+    return {initGame};
 }();
 
-TicTacToe.playGame();
+GameController.initGame();

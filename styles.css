@@ -11,6 +11,27 @@ body {
     padding: 1rem;
 }
 
+/* Modal */
+#name-entry {
+    padding: 1rem;
+}
+
+form {
+    display: grid;
+    grid-template: repeat(2, 1fr) / 15ch auto;
+    gap: 1rem;
+
+}
+
+form > * {
+    justify-self: center;
+    align-self: center;
+}
+
+#start-button {
+    grid-column: 1 / -1;
+}
+
 #grid {
     display: grid;
     width: 50vw;

@@ -15,15 +15,24 @@
 
     <div id="grid"></div>
 
-    <template id="cell-template">
-        <div class="cell"></div>
-    </template>
-
     <div id="winner"></div>
 
     <button id="restart-button">Reset Game</button>
 
-    <template id="icon-template">
+    <dialog id="name-entry" open popover="manual">
+        <form>
+            <label for="player-one-name">Player 1's name:</label>
+            <input id="player-one-name" name="player-one-name" type="text" required>
+
+            <label for="player-two-name">Player 2's name:</label>
+            <input id="player-two-name" name="player-two-name" type="text" required>
+
+            <button type="submit" id="start-button">Start game</button>
+        </form>
+    </dialog>
+
+    <template>
+        <div class="cell"></div>
         <img src="assets/X.svg" class="X">
         <img src="assets/O.svg" class="O">
     </template>

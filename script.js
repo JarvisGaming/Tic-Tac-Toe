@@ -3,7 +3,9 @@ const GameController = function(){
 
     function Player(mark){
         if (!new.target) throw new Error("Player constructor must be called with 'new'");
+
         this.mark = mark;
+        this.name = "";
     }
 
     const player1 = new Player("X");
@@ -52,9 +54,10 @@ const GameController = function(){
         const boardElement = document.getElementById("grid");
         const winnerDisplay = document.getElementById("winner");
 
-        const cellTemplate = document.querySelector("#cell-template").content.querySelector(".cell");
-        const xTemplate = document.querySelector("#icon-template").content.querySelector(".X");
-        const oTemplate = document.querySelector("#icon-template").content.querySelector(".O");
+        const template = document.querySelector("template");
+        const cellTemplate = template.content.querySelector(".cell");
+        const xTemplate = template.content.querySelector(".X");
+        const oTemplate = template.content.querySelector(".O");
 
         function initBoard(){
             for (let i = 0; i < numCells; i++){
@@ -88,10 +91,8 @@ const GameController = function(){
 
             switch (winner){
                 case player1:
-                    winnerMessage = "X wins!";
-                    break;
                 case player2:
-                    winnerMessage = "O wins!";
+                    winnerMessage = `${winner.name} wins!`;
                     break;
                 case null:
                     winnerMessage = "It's a tie!";
@@ -174,7 +175,9 @@ const GameController = function(){
         return null;
     }
 
-    function initGame(){
+    function initGame(playerOneName, playerTwoName){
+        player1.name = playerOneName;
+        player2.name = playerTwoName;
         GameDisplay.initBoard();
     }
 
@@ -194,7 +197,25 @@ const GameController = function(){
     };
 }();
 
-GameController.initGame();
+
+const startButton = document.querySelector("#start-button");
+
+function getPlayerNames(event){
+    event.preventDefault();
+
+    const dialog = document.querySelector("#name-entry");
+    const form = dialog.querySelector("form");
+
+    const {elements} = form;
+    const playerOneName = elements["player-one-name"].value;
+    const playerTwoName = elements["player-two-name"].value;
+
+    dialog.close();
+
+    GameController.initGame(playerOneName, playerTwoName);
+}
+
+startButton.addEventListener("click", getPlayerNames);
 
 const restartButton = document.getElementById("restart-button");
 restartButton.addEventListener("click", GameController.restartGame);

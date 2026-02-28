@@ -5,7 +5,7 @@ const GameController = function(){
         if (!new.target) throw new Error("Player constructor must be called with 'new'");
 
         this.mark = mark;
-        this.name = "";
+        this.name = null;
     }
 
     const player1 = new Player("X");
@@ -197,8 +197,11 @@ const GameController = function(){
     };
 }();
 
-
 const startButton = document.querySelector("#start-button");
+startButton.addEventListener("click", getPlayerNames);
+
+const restartButton = document.getElementById("restart-button");
+restartButton.addEventListener("click", GameController.restartGame);
 
 function getPlayerNames(event){
     event.preventDefault();
@@ -211,11 +214,7 @@ function getPlayerNames(event){
     const playerTwoName = elements["player-two-name"].value;
 
     dialog.close();
+    document.querySelector("#game").style.visibility = "visible";
 
     GameController.initGame(playerOneName, playerTwoName);
 }
-
-startButton.addEventListener("click", getPlayerNames);
-
-const restartButton = document.getElementById("restart-button");
-restartButton.addEventListener("click", GameController.restartGame);

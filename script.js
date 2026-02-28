@@ -1,31 +1,21 @@
 const GameController = function(){
     const boardSize = 9;
 
-    const Symbol = {
-        X: "X",
-        O: "O",
-        Empty: " ",
-    };
+    function Player(mark){
+        if (!new.target) throw new Error("Player constructor must be called with 'new'");
+        this.mark = mark;
+    }
 
-    const Player = {
-        X: "Player1",
-        O: "Player2",
-    };
-
-    const Winner = {
-        X: "Player1",
-        O: "Player2",
-        Tie: "Tie",
-        Undetermined: "Undetermined",
-    };
-
-    let currentPlayer = Player.X;
+    const player1 = new Player("X");
+    const player2 = new Player("O");
+    let currentPlayer = player1;
 
     const GameBoard = function(){
-        const state = new Array(boardSize).fill(Symbol.Empty);
+        const emptyCellSymbol = "";
+        const state = new Array(boardSize).fill(emptyCellSymbol);
 
         function isEmpty(position){
-            return state[position] == Symbol.Empty;
+            return state[position] == emptyCellSymbol;
         }
 
         function getMark(position){
@@ -43,9 +33,10 @@ const GameController = function(){
         }
 
         function isFull(){
-            return state.every(mark => mark != Symbol.Empty);
+            return state.every(mark => mark != emptyCellSymbol);
         }
 
+        // Returns the winning player. Returns null if it's a tie, or if the game hasn't ended yet.
         function getWinner(){
             const winningPaths = [
                 [0, 1, 2],
@@ -67,17 +58,17 @@ const GameController = function(){
             for (const [pos1, pos2, pos3] of winningPaths){
                 const [mark1, mark2, mark3] = [state[pos1], state[pos2], state[pos3]];
 
-                if (isMarksEqual(mark1, mark2, mark3, Symbol.X)) return Winner.X;
-                else if (isMarksEqual(mark1, mark2, mark3, Symbol.O)) return Winner.O;
+                if (isMarksEqual(mark1, mark2, mark3, player1.mark)) return player1;
+                else if (isMarksEqual(mark1, mark2, mark3, player2.mark)) return player2;
             }
 
-            if (isFull()) return Winner.Tie;
-            else return Winner.Undetermined;
+            return null;
         }
 
         return {
             getMark,
             setMark,
+            isFull,
             getWinner,
         };
     }();
@@ -105,13 +96,13 @@ const GameController = function(){
             let winnerMessage;
 
             switch (winner){
-                case Winner.X:
+                case player1:
                     winnerMessage = "X wins!";
                     break;
-                case Winner.O:
+                case player2:
                     winnerMessage = "O wins!";
                     break;
-                case Winner.Tie:
+                case null:
                     winnerMessage = "It's a tie!";
                     break;
                 default:
@@ -136,18 +127,12 @@ const GameController = function(){
     }();
 
     function changePlayer(){
-        if (currentPlayer == Player.X) currentPlayer = Player.O;
-        else currentPlayer = Player.X;
-    }
-
-    function getCurrentPlayerMark(){
-        if (currentPlayer == Player.X) return Symbol.X;
-        else if (currentPlayer == Player.O) return Symbol.O;
-        else throw new Error(`Invalid currentPlayer: ${currentPlayer}`);
+        if (currentPlayer === player1) currentPlayer = player2;
+        else currentPlayer = player1;
     }
 
     function handleCellClick(event){
-        const mark = getCurrentPlayerMark();
+        const mark = currentPlayer.mark;
         const cell = event.target;
         const cellIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
 
@@ -155,7 +140,7 @@ const GameController = function(){
             GameDisplay.updateCell(cellIndex, mark);
             changePlayer();
 
-            if (GameBoard.getWinner() != Winner.Undetermined){
+            if (GameBoard.getWinner() != null || GameBoard.isFull()){
                 endGame();
             }
         }

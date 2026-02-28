@@ -1,5 +1,5 @@
 const GameController = function(){
-    const boardSize = 9;
+    const numCells = 9;
 
     function Player(mark){
         if (!new.target) throw new Error("Player constructor must be called with 'new'");
@@ -12,20 +12,20 @@ const GameController = function(){
 
     const GameBoard = function(){
         const emptyCellSymbol = "";
-        const state = new Array(boardSize).fill(emptyCellSymbol);
+        let state = new Array(numCells).fill(emptyCellSymbol);
 
         function isEmpty(position){
             return state[position] == emptyCellSymbol;
         }
 
         function getMark(position){
-            if (position < 0 || position >= boardSize) throw new Error(`Invalid cell position: ${position}`);
+            if (position < 0 || position >= numCells) throw new Error(`Invalid cell position: ${position}`);
             return state[position];
         }
 
-        // Returns true if the mark is successfully placed, false otherwise.
+        /** Returns true if the mark is successfully placed, false otherwise. */
         function setMark(position, mark){
-            if (position < 0 || position >= boardSize) throw new Error(`Invalid cell position: ${position}`);
+            if (position < 0 || position >= numCells) throw new Error(`Invalid cell position: ${position}`);
             if (!isEmpty(position)) return false;
 
             state[position] = mark;
@@ -36,24 +36,38 @@ const GameController = function(){
             return state.every(mark => mark != emptyCellSymbol);
         }
 
+        function clearBoard(){
+            state = state.map(() => emptyCellSymbol);
+        }
+
         return {
             getMark,
             setMark,
             isFull,
+            clearBoard,
         };
     }();
 
     const GameDisplay = function(){
         const boardElement = document.getElementById("grid");
         const cellTemplate = document.querySelector("template");
+        const winnerDisplay = document.getElementById("winner");
         const item = cellTemplate.content.querySelector(".cell");
     
         function initBoard(){
-            for (let i = 0; i < boardSize; i++){
+            for (let i = 0; i < numCells; i++){
                 const cellNode = document.importNode(item, true);
                 cellNode.addEventListener("click", handleCellClick);
                 boardElement.appendChild(cellNode);
             }
+        }
+        
+        function resetDisplay(){
+            for (const cell of boardElement.children){
+                cell.innerHTML = "";
+            }
+            winnerDisplay.textContent = "";
+            enableBoardInteraction();
         }
     
         function updateCell(position, mark){
@@ -62,7 +76,6 @@ const GameController = function(){
         }
 
         function displayWinner(winner){
-            const winnerDisplay = document.getElementById("winner");
             let winnerMessage;
 
             switch (winner){
@@ -82,6 +95,12 @@ const GameController = function(){
             winnerDisplay.innerText = winnerMessage;
         }
 
+        function enableBoardInteraction(){
+            for (const cell of boardElement.children){
+                cell.addEventListener("click", handleCellClick);
+            }
+        }
+
         function disableBoardInteraction(){
             for (const cell of boardElement.children){
                 cell.removeEventListener("click", handleCellClick);
@@ -90,6 +109,7 @@ const GameController = function(){
         
         return { 
             initBoard,
+            resetDisplay,
             updateCell,
             displayWinner,
             disableBoardInteraction,
@@ -106,7 +126,7 @@ const GameController = function(){
         const cell = event.target;
         const cellIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
 
-        if(GameBoard.setMark(cellIndex, mark)){
+        if (GameBoard.setMark(cellIndex, mark)){
             GameDisplay.updateCell(cellIndex, mark);
             changePlayer();
 
@@ -116,7 +136,7 @@ const GameController = function(){
         }
     }
 
-    // Returns the winning player. Returns null if it's a tie, or if the game hasn't ended yet.
+    /** Gets the winning player. Returns null if it's a tie, or if the game hasn't ended yet. */
     function getWinner(){
         const winningPaths = [
             [0, 1, 2],
@@ -154,7 +174,18 @@ const GameController = function(){
         GameDisplay.disableBoardInteraction();
     }
 
-    return {initGame};
+    function restartGame(){
+        GameBoard.clearBoard();
+        GameDisplay.resetDisplay();
+    }
+
+    return {
+        initGame,
+        restartGame,
+    };
 }();
 
 GameController.initGame();
+
+const restartButton = document.getElementById("restart-button");
+restartButton.addEventListener("click", GameController.restartGame);

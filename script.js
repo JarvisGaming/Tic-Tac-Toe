@@ -82,4 +82,40 @@ const TicTacToe = function(){
             getWinner,
         };
     }();
+
+    let currentPlayer = Player.X;
+
+    function changePlayer(){
+        if (currentPlayer == Player.X) currentPlayer = Player.O;
+        else currentPlayer = Player.X;
+    }
+
+    function getCurrentPlayerMark(){
+        if (currentPlayer == Player.X) return Symbol.X;
+        else if (currentPlayer == Player.O) return Symbol.O;
+        else throw new Error(`Invalid currentPlayer: ${currentPlayer}`);
+    }
+
+    function playRound(){
+        const mark = getCurrentPlayerMark();
+
+        let position;
+        do {
+            position = parseInt(prompt("Enter position:"));
+        } while (!GameBoard.set(position, mark));
+
+        GameBoard.display();
+        changePlayer();
+    }
+
+    function playGame(){
+        while (GameBoard.getWinner() == Winner.Undetermined) {
+            playRound();
+        }
+        console.log(GameBoard.getWinner());
+    }
+
+    return {playGame};
 }();
+
+TicTacToe.playGame();

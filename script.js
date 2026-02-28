@@ -39,10 +39,17 @@ const GameController = function(){
                 cell.textContent = mark;
             }
         }
+
+        function disableBoardInteraction(){
+            for (const cell of board.children){
+                cell.removeEventListener("click", playRound);
+            }
+        }
         
         return { 
             initBoard,
             updateBoard,
+            disableBoardInteraction,
         };
     }();
 
@@ -114,19 +121,42 @@ const GameController = function(){
     function playRound(event){
         const mark = getCurrentPlayerMark();
         const cell = event.target;
-        console.log(cell.parentNode.children);
         const cellIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
-
-        console.log({mark, cell, cellIndex});
 
         if(GameBoard.set(cellIndex, mark)){
             GameDisplay.updateBoard(GameBoard.state);
             changePlayer();
         }
+
+        if (GameBoard.getWinner() != Winner.Undetermined){
+            endGame(GameBoard.getWinner());
+        }
     }
 
     function initGame(){
         GameDisplay.initBoard();
+    }
+
+    function endGame(winner){
+        const winnerDisplay = document.getElementById("winner");
+        let winnerMessage;
+
+        switch (winner){
+            case Winner.X:
+                winnerMessage = "X wins!";
+                break;
+            case Winner.O:
+                winnerMessage = "O wins!";
+                break;
+            case Winner.Tie:
+                winnerMessage = "It's a tie!";
+                break;
+            default:
+                throw new Error(`Invalid winner: ${winner}`);
+        }
+
+        winnerDisplay.textContent = winnerMessage;
+        GameDisplay.disableBoardInteraction();
     }
 
     return {initGame};

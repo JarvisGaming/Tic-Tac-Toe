@@ -36,40 +36,10 @@ const GameController = function(){
             return state.every(mark => mark != emptyCellSymbol);
         }
 
-        // Returns the winning player. Returns null if it's a tie, or if the game hasn't ended yet.
-        function getWinner(){
-            const winningPaths = [
-                [0, 1, 2],
-                [3, 4, 5],
-                [6, 7, 8],
-                [0, 3, 6],
-                [1, 4, 7],
-                [2, 5, 8],
-                [0, 4, 8],
-                [2, 4, 6],
-            ];
-
-            function isMarksEqual(mark1, mark2, mark3, target){
-                return (mark1 == mark2) &&
-                    (mark2 == mark3) &&
-                    (mark3 == target);
-            }
-
-            for (const [pos1, pos2, pos3] of winningPaths){
-                const [mark1, mark2, mark3] = [state[pos1], state[pos2], state[pos3]];
-
-                if (isMarksEqual(mark1, mark2, mark3, player1.mark)) return player1;
-                else if (isMarksEqual(mark1, mark2, mark3, player2.mark)) return player2;
-            }
-
-            return null;
-        }
-
         return {
             getMark,
             setMark,
             isFull,
-            getWinner,
         };
     }();
 
@@ -140,10 +110,39 @@ const GameController = function(){
             GameDisplay.updateCell(cellIndex, mark);
             changePlayer();
 
-            if (GameBoard.getWinner() != null || GameBoard.isFull()){
+            if (getWinner() != null || GameBoard.isFull()){
                 endGame();
             }
         }
+    }
+
+    // Returns the winning player. Returns null if it's a tie, or if the game hasn't ended yet.
+    function getWinner(){
+        const winningPaths = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+
+        function isMarksEqual(mark1, mark2, mark3, target){
+            return (mark1 == mark2) &&
+                (mark2 == mark3) &&
+                (mark3 == target);
+        }
+
+        for (const [pos1, pos2, pos3] of winningPaths){
+            const [mark1, mark2, mark3] = [GameBoard.getMark(pos1), GameBoard.getMark(pos2), GameBoard.getMark(pos3)];
+
+            if (isMarksEqual(mark1, mark2, mark3, player1.mark)) return player1;
+            else if (isMarksEqual(mark1, mark2, mark3, player2.mark)) return player2;
+        }
+
+        return null;
     }
 
     function initGame(){
@@ -151,7 +150,7 @@ const GameController = function(){
     }
 
     function endGame(){
-        GameDisplay.displayWinner(GameBoard.getWinner());
+        GameDisplay.displayWinner(getWinner());
         GameDisplay.disableBoardInteraction();
     }
 
